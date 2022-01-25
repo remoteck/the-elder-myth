@@ -14,12 +14,17 @@ public class Window {
     private int width, height;
     private String title;
     private long glfwWindow;
+    private float r, g, b, a;
     private static Window window = null;
 
     private Window() {
         this.width = 1920;
         this.height = 1080;
         this.title = "The Elder Myth";
+        r = 0.0f;
+        g = 0.0f;
+        b = 0.0f;
+        a = 1.0f;
     }
 
     public static Window get() {
@@ -71,6 +76,7 @@ public class Window {
         glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
         glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
         glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
+        glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback);
 
         //Fazer o link com OpenGL
         glfwMakeContextCurrent(glfwWindow);
@@ -89,7 +95,7 @@ public class Window {
             //Captar eventos de mouse, teclas e etc
             glfwPollEvents();
             //Cor
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(r, g, b, a);
             //Usar o Color Buffer para carregar as cores colocadas acima
             glClear(GL_COLOR_BUFFER_BIT);
             //Trocar os buffer, OpenGL e GLFW fazem automaticamente
