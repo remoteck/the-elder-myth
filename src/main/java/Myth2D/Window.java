@@ -29,7 +29,7 @@ public class Window {
     }
 
     public void run() {
-        System.out.println("Olá, essa é a Engine Myth2D versão" + Version.getVersion());
+        System.out.println("Olá, essa é a Engine Myth2D versão " + Version.getVersion());
 
         init();
         loop();
@@ -75,7 +75,7 @@ public class Window {
             //Captar eventos de mouse, teclas e etc
             glfwPollEvents();
             //Cor
-            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             //Usar o Color Buffer para carregar as cores colocadas acima
             glClear(GL_COLOR_BUFFER_BIT);
             //Trocar os buffer, OpenGL e GLFW fazem automaticamente
