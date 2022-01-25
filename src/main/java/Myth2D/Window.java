@@ -49,7 +49,7 @@ public class Window {
         GLFWErrorCallback.createPrint(System.err).set();
 
         //Inicializar o GLFW para abrir a janela caso não haja erro
-        if(!glfwInit()){
+        if (!glfwInit()) {
             throw new IllegalStateException("Não foi possível inicializar o GLFW.");
         }
 
@@ -63,9 +63,14 @@ public class Window {
         //Esse passo precisa de memory management, por que se baseia em C
         //Por isso essa variável é do tipo Long, identifica um espaço de memória
         glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
-        if(glfwWindow == NULL){
+        if (glfwWindow == NULL) {
             throw new IllegalStateException("Falha ao criar a janela GLFW.");
         }
+
+        //Lambda para registrar callback de cursor
+        glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
+        glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
+        glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
 
         //Fazer o link com OpenGL
         glfwMakeContextCurrent(glfwWindow);
@@ -80,7 +85,7 @@ public class Window {
     }
 
     public void loop() {
-        while(!glfwWindowShouldClose(glfwWindow)){
+        while (!glfwWindowShouldClose(glfwWindow)) {
             //Captar eventos de mouse, teclas e etc
             glfwPollEvents();
             //Cor
