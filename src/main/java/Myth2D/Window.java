@@ -3,6 +3,7 @@ package Myth2D;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+import util.Time;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -14,17 +15,33 @@ public class Window {
     private int width, height;
     private String title;
     private long glfwWindow;
-    private float r, g, b, a;
+    public float r, g, b, a;
     private static Window window = null;
+    private static Scene currentScene;
 
     private Window() {
         this.width = 1920;
         this.height = 1080;
         this.title = "The Elder Myth";
-        r = 0.0f;
-        g = 0.0f;
-        b = 0.0f;
+        r = 1.0f;
+        g = 1.0f;
+        b = 1.0f;
         a = 1.0f;
+    }
+
+    public static void changeScene(int newScene) {
+        switch (newScene) {
+            case 0:
+                currentScene = new LevelEditorScene();
+                //currentScene.init();
+                break;
+            case 1:
+                currentScene = new LevelScene();
+                break;
+            default:
+                assert false : "Cena desconhecida '" + newScene + "'";
+                break;
+        }
     }
 
     public static Window get() {
@@ -88,9 +105,15 @@ public class Window {
         //Essa linha é crítica para a interação do framework com o OpenGL
         //GLCapabilities cria uma instância e permite a conexão do OpenGL
         GL.createCapabilities();
+
+        Window.changeScene(0);
     }
 
     public void loop() {
+        float beginTime = Time.getTime();
+        float endTime;
+        float dt = -1.0f;
+
         while (!glfwWindowShouldClose(glfwWindow)) {
             //Captar eventos de mouse, teclas e etc
             glfwPollEvents();
@@ -98,8 +121,14 @@ public class Window {
             glClearColor(r, g, b, a);
             //Usar o Color Buffer para carregar as cores colocadas acima
             glClear(GL_COLOR_BUFFER_BIT);
+            if (dt >= 0)
+                currentScene.update(dt);
             //Trocar os buffer, OpenGL e GLFW fazem automaticamente
             glfwSwapBuffers(glfwWindow);
+            //Calcular delta tempo para detecção de frames e possíveis lags
+            endTime = Time.getTime();
+            dt = endTime - beginTime;
+            beginTime = endTime;
         }
     }
 
