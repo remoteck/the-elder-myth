@@ -1,0 +1,107 @@
+package renderer;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.lwjgl.opengl.GL11.GL_FALSE;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glGetShaderInfoLog;
+
+public class Shader {
+
+    private int shaderProgramID;
+    private String vertexSource;
+    private String fragmentSource;
+    private String filePath;
+
+    public Shader(String filePath) {
+        this.filePath = filePath;
+        try {
+            String source = new String(Files.readAllBytes(Paths.get(filePath)));
+            String[] splitString = source.split("(#type)( )+([a-zA-Z]+)");
+            //Achar o primeiro padrão depois de #type
+            int index = source.indexOf("#type") + 6;
+            int eol = source.indexOf("\r\n", index);
+            String firstPattern = source.substring(index, eol).trim();
+            //Achar o segundo padrão depois de #type
+            index = source.indexOf("#type", eol) + 6;
+            eol = source.indexOf("\r\n", index);
+            String secondPattern = source.substring(index, eol).trim();
+
+            if (firstPattern.equals("vertex")) {
+                vertexSource = splitString[1];
+            } else if (firstPattern.equals("fragment")) {
+                fragmentSource = splitString[1];
+            } else {
+                throw new IOException("Não foi possível encontrar '" + firstPattern + "'");
+            }
+
+            if (secondPattern.equals("vertex")) {
+                vertexSource = splitString[2];
+            } else if (secondPattern.equals("fragment")) {
+                fragmentSource = splitString[2];
+            } else {
+                throw new IOException("Não foi possível encontrar '" + secondPattern + "'");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert false : "ERRO: Impossível abrir arquivo para shader: '" + filePath + "'";
+        }
+    }
+
+    public void compile() {
+        int vertexID, fragmentID;
+        //Compilar e linkar os shaders de cor
+        //Carregar e compilar os shaders de vértices
+        vertexID = glCreateShader(GL_VERTEX_SHADER);
+        //Linkar a fonte dos shaders com a placa de vídeo
+        glShaderSource(vertexID, vertexSource);
+        glCompileShader(vertexID);
+        //Checar por erros na compilação (mostra 0 caso tenha erros)
+        int successV = glGetShaderi(vertexID, GL_COMPILE_STATUS);
+        if (successV == GL_FALSE) {
+            int len = glGetShaderi(vertexID, GL_INFO_LOG_LENGTH);
+            System.out.println("ERRO: '" + filePath + "'\n\tFalha ao compilar os shaders de vértices.");
+            System.out.println(glGetShaderInfoLog(vertexID, len));
+            assert false : "";
+        }
+
+        //Carregar e compilar os shaders de vértices
+        fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
+        //Linkar a fonte dos shaders com a placa de vídeo
+        glShaderSource(fragmentID, fragmentSource);
+        glCompileShader(fragmentID);
+        //Checar por erros na compilação (mostra 0 caso tenha erros)
+        int successF = glGetShaderi(fragmentID, GL_COMPILE_STATUS);
+        if (successF == GL_FALSE) {
+            int len = glGetShaderi(fragmentID, GL_INFO_LOG_LENGTH);
+            System.out.println("ERRO: '" + filePath + "'\n\tFalha ao compilar os shaders de fragmento.");
+            System.out.println(glGetShaderInfoLog(fragmentID, len));
+            assert false : "";
+        }
+
+        //Linkar os shaders e checar por erros
+        shaderProgramID = glCreateProgram();
+        glAttachShader(shaderProgramID, vertexID);
+        glAttachShader(shaderProgramID, fragmentID);
+        glLinkProgram(shaderProgramID);
+        int successP = glGetProgrami(shaderProgramID, GL_LINK_STATUS);
+        if (successP == GL_FALSE) {
+            int len = glGetProgrami(shaderProgramID, GL_INFO_LOG_LENGTH);
+            System.out.println("ERRO: '" + filePath + "'\n\tFalha ao linkar os shaders.");
+            System.out.println(glGetProgramInfoLog(shaderProgramID, len));
+            assert false : "";
+        }
+    }
+
+    public void use() {
+        //Informar o programa de shader
+        glUseProgram(shaderProgramID);
+    }
+
+    public void detach() {
+        glUseProgram(0);
+    }
+
+}
